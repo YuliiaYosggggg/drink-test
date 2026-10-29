@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Вечірній прогноз</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --bg: #08070d;
+    --card: rgba(25, 21, 38, 0.82);
+    --border: rgba(255,255,255,0.10);
+    --purple: #8b5cf6;
+    --purple-light: #a78bfa;
+    --text: #ffffff;
+    --muted: #aaa4b5;
+}
+
+body {
+    min-height: 100vh;
+    font-family: "Inter", sans-serif;
+    color: var(--text);
+    background:
+        radial-gradient(circle at 50% -10%, rgba(139,92,246,.30), transparent 35%),
+        radial-gradient(circle at 10% 80%, rgba(91,33,182,.15), transparent 30%),
+        radial-gradient(circle at 90% 70%, rgba(124,58,237,.12), transparent 30%),
+        var(--bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: hidden;
+}
+
+/* Background decorations */
+
+.orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: .18;
+    pointer-events: none;
+}
+
+.orb.one {
+    width: 300px;
+    height: 300px;
+    background: #7c3aed;
+    top: -120px;
+    left: -100px;
+}
+
+.orb.two {
+    width: 260px;
+    height: 260px;
+    background: #4c1d95;
+    bottom: -100px;
+    right: -80px;
+}
+
+.container {
+    width: 100%;
+    max-width: 560px;
+    padding: 24px;
+    position: relative;
+    z-index: 2;
+}
+
+.card {
+    position: relative;
+    background: linear-gradient(
+        145deg,
+        rgba(39,32,56,.90),
+        rgba(18,15,27,.90)
+    );
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    padding: 38px;
+    box-shadow:
+        0 30px 100px rgba(0,0,0,.55),
+        inset 0 1px 0 rgba(255,255,255,.04);
+    backdrop-filter: blur(25px);
+    animation: cardIn .5s ease;
+}
+
+@keyframes cardIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px) scale(.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* START */
+
+.logo {
+    width: 82px;
+    height: 82px;
+    margin: 0 auto 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 24px;
+    background: linear-gradient(
+        135deg,
+        rgba(139,92,246,.25),
+        rgba(139,92,246,.05)
+    );
+    border: 1px solid rgba(167,139,250,.20);
+    font-size: 42px;
+    box-shadow: 0 15px 40px rgba(139,92,246,.15);
+}
+
+.badge {
+    display: table;
+    margin: 0 auto 16px;
+    padding: 7px 13px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--purple-light);
+    background: rgba(139,92,246,.10);
+    border: 1px solid rgba(139,92,246,.20);
+}
+
+h1 {
+    text-align: center;
+    font-size: 32px;
+    line-height: 1.15;
+    letter-spacing: -1px;
+    margin-bottom: 15px;
+}
+
+.subtitle {
+    color: var(--muted);
+    text-align: center;
+    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 30px;
+}
+
+.start-button,
+.restart-button {
+    width: 100%;
+    border: none;
+    border-radius: 15px;
+    padding: 17px;
+    color: white;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: .3px;
+    cursor: pointer;
+    background: linear-gradient(
+        135deg,
+        #8b5cf6,
+        #6d28d9
+    );
+    box-shadow:
+        0 10px 30px rgba(124,58,237,.28),
+        inset 0 1px 0 rgba(255,255,255,.15);
+    transition: .25s;
+}
+
+.start-button:hover,
+.restart-button:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 15px 35px rgba(124,58,237,.40),
+        inset 0 1px 0 rgba(255,255,255,.2);
+}
+
+.start-button:active,
+.restart-button:active {
+    transform: scale(.98);
+}
+
+.footer-note {
+    margin-top: 18px;
+    color: #6f6978;
+    text-align: center;
+    font-size: 11px;
+}
+
+/* QUIZ */
+
+.quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.question-count {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.category {
+    font-size: 11px;
+    color: var(--purple-light);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.progress-track {
+    height: 6px;
+    width: 100%;
+    background: rgba(255,255,255,.07);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-bottom: 38px;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    border-radius: inherit;
+    background: linear-gradient(
+        90deg,
+        #7c3aed,
+        #a78bfa
+    );
+    box-shadow: 0 0 15px rgba(139,92,246,.5);
+    transition: width .45s cubic-bezier(.4,0,.2,1);
+}
+
+.question {
+    font-size: 25px;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -.5px;
+    margin-bottom: 25px;
+}
+
+.answers {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+}
+
+.answer {
+    width: 100%;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 15px;
+    padding: 16px 17px;
+    background: rgba(255,255,255,.035);
+    color: #eeeaf2;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: .2s;
+}
+
+.answer:hover {
+    transform: translateX(5px);
+    border-color: rgba(139,92,246,.55);
+    background: rgba(139,92,246,.11);
+}
+
+.answer:active {
+    transform: scale(.985);
+}
+
+/* ANALYSIS */
+
+.analysis {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.analysis-icon {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    margin: 0 auto 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(139,92,246,.10);
+    border: 1px solid rgba(139,92,246,.25);
+    font-size: 38px;
+    animation: pulse 1.6s infinite;
+}
+
+@keyframes pulse {
+    0%,100% {
+        box-shadow: 0 0 0 0 rgba(139,92,246,.25);
+    }
+    50% {
+        box-shadow: 0 0 0 18px rgba(139,92,246,0);
+    }
+}
+
+.analysis h1 {
+    margin-bottom: 10px;
+}
+
+.analysis-description {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 25px;
+}
+
+.analysis-progress {
+    height: 8px;
+    background: rgba(255,255,255,.07);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.analysis-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(
+        90deg,
+        #7c3aed,
+        #a78bfa
+    );
+    transition: width .5s ease;
+}
+
+.analysis-status {
+    min-height: 20px;
+    color: #bbb5c5;
+    font-size: 12px;
+}
+
+/* RESULT */
+
+.result-card {
+    text-align: center;
+}
+
+.result-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 13px;
+    border-radius: 100px;
+    background: rgba(34,197,94,.08);
+    border: 1px solid rgba(34,197,94,.16);
+    color: #86efac;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+}
+
+.result-icon {
+    font-size: 76px;
+    line-height: 1;
+    margin-bottom: 18px;
+    animation: resultPop .6s cubic-bezier(.17,.67,.32,1.3);
+}
+
+@keyframes resultPop {
+    from {
+        opacity: 0;
+        transform: scale(.4) rotate(-10deg);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) rotate(0);
+    }
+}
+
+.result-title {
+    font-size: 29px;
+    font-weight: 800;
+    letter-spacing: -.8px;
+    margin-bottom: 12px;
+}
+
+.result-description {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.65;
+    margin-bottom: 27px;
+}
+
+.score-label {
+    display: flex;
+    justify-content: space-between;
+    color: #aaa4b5;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.result-track {
+    height: 9px;
+    background: rgba(255,255,255,.07);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-bottom: 28px;
+}
+
+.result-fill {
+    width: 0;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        #7c3aed,
+        #a78bfa
+    );
+    border-radius: inherit;
+    box-shadow: 0 0 18px rgba(139,92,246,.45);
+    transition: width 1.5s cubic-bezier(.4,0,.2,1);
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 9px;
+    margin-bottom: 25px;
+}
+
+.stat {
+    padding: 12px 5px;
+    background: rgba(255,255,255,.035);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 13px;
+}
+
+.stat-number {
+    display: block;
+    font-size: 15px;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    color: #77717f;
+    font-size: 9px;
+}
+
+.disclaimer {
+    color: #625d6a;
+    font-size: 10px;
+    margin-top: 16px;
+}
+
+@media (max-width: 520px) {
+
+    .container {
+        padding: 14px;
+    }
+
+    .card {
+        padding: 27px 21px;
+        border-radius: 23px;
+    }
+
+    h1 {
+        font-size: 28px;
+    }
+
+    .question {
+        font-size: 22px;
+    }
+
+    .result-title {
+        font-size: 25px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="orb one"></div>
+<div class="orb two"></div>
+
+<div class="container">
+
+<!-- START -->
+
+<div class="card" id="startScreen">
+
+    <div class="logo">🔬</div>
+
+    <div class="badge">Вечірнє дослідження</div>
+
+    <h1>Який у тебе сьогодні вайб?</h1>
+
+    <p class="subtitle">
+        10 коротких питань допоможуть системі визначити,
+        який напій найбільше відповідає твоєму сьогоднішньому
+        настрою та планам.
+    </p>
+
+    <button class="start-button" onclick="startTest()">
+        ПОЧАТИ ДОСЛІДЖЕННЯ →
+    </button>
+
+    <div class="footer-note">
+        10 питань · ~1 хвилина · результат для розваги
+    </div>
+
+</div>
+
+
+<!-- QUIZ -->
+
+<div class="card hidden" id="quizScreen">
+
+    <div class="quiz-header">
+
+        <span class="question-count" id="questionNumber">
+            01 / 10
+        </span>
+
+        <span class="category">
+            АНАЛІЗ ВАЙБУ
+        </span>
+
+    </div>
+
+    <div class="progress-track">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="question" id="questionText"></div>
+
+    <div class="answers" id="answers"></div>
+
+</div>
+
+
+<!-- ANALYSIS -->
+
+<div class="card hidden" id="analysisScreen">
+
+    <div class="analysis">
+
+        <div class="analysis-icon">
+            🧠
+        </div>
+
+        <h1>Аналізуємо...</h1>
+
+        <p class="analysis-description">
+            Система порівнює твої відповіді
+            та формує вечірній профіль.
+        </p>
+
+        <div class="analysis-progress">
+            <div class="analysis-fill" id="analysisFill"></div>
+        </div>
+
+        <div class="analysis-status" id="analysisStatus">
+            Зчитування відповідей...
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- RESULT -->
+
+<div class="card result-card hidden" id="resultScreen">
+
+    <div class="result-top">
+        ● АНАЛІЗ ЗАВЕРШЕНО
+    </div>
+
+    <div class="result-icon" id="resultIcon">
+        🍺
+    </div>
+
+    <div class="result-title" id="resultTitle">
+        СЬОГОДНІ ТИ — ПИВО
+    </div>
+
+    <div class="result-description" id="resultDescription">
+        ...
+    </div>
+
+    <div class="score-label">
+        <span>РІВЕНЬ ВІДПОВІДНОСТІ</span>
+        <span id="percentageText">87%</span>
+    </div>
+
+    <div class="result-track">
+        <div class="result-fill" id="resultFill"></div>
+    </div>
+
+    <div class="stats">
+
+        <div class="stat">
+            <span class="stat-number" id="stat1">87%</span>
+            <span class="stat-label">ВАЙБ</span>
+        </div>
+
+        <div class="stat">
+            <span class="stat-number" id="stat2">HIGH</span>
+            <span class="stat-label">ЕНЕРГІЯ</span>
+        </div>
+
+        <div class="stat">
+            <span class="stat-number" id="stat3">94%</span>
+            <span class="stat-label">ХАОС</span>
+        </div>
+
+    </div>
+
+    <button class="restart-button" onclick="restartTest()">
+        ПРОЙТИ ЩЕ РАЗ
+    </button>
+
+    <div class="disclaimer">
+        Результат створено виключно для розваги 😄
+    </div>
+
+</div>
+
+</div>
+
+
+<script>
+
+const questions = [
+
+{
+    question: "Який у тебе сьогодні настрій?",
+    answers: [
+        ["😎 Спокійний, просто відпочити", "wine"],
+        ["🔥 Енергійний, треба щось робити", "beer"],
+        ["🥳 Сьогодні буде цікаво", "mix"],
+        ["💀 Сам не знаю, що відбувається", "strong"]
+    ]
+},
+
+{
+    question: "Як виглядає твій ідеальний вечір?",
+    answers: [
+        ["🛋️ Диван, спокій і серіал", "wine"],
+        ["👥 Компанія друзів", "beer"],
+        ["🎉 Велика тусовка", "mix"],
+        ["🌃 Кудись піти без плану", "strong"]
+    ]
+},
+
+{
+    question: "Тобі кажуть: «Поїхали, буде весело». Твоя реакція?",
+    answers: [
+        ["🤨 А куди саме?", "wine"],
+        ["😎 Я вже готовий", "beer"],
+        ["🔥 Я в ділі", "mix"],
+        ["💀 Ми точно пошкодуємо", "strong"]
+    ]
+},
+
+{
+    question: "Що б ти зараз замовив поїсти?",
+    answers: [
+        ["🍕 Піцу", "beer"],
+        ["🍔 Бургер", "mix"],
+        ["🌯 Шаурму", "strong"],
+        ["🍟 Картоплю фрі", "wine"]
+    ]
+},
+
+{
+    question: "Яка музика найбільше підходить сьогодні?",
+    answers: [
+        ["🎧 Щось спокійне", "wine"],
+        ["🎤 Те, що можна співати", "beer"],
+        ["🔊 Максимально гучна", "mix"],
+        ["🗿 Мені все одно", "strong"]
+    ]
+},
+
+{
+    question: "Яка твоя роль у компанії?",
+    answers: [
+        ["🧠 Спостерігаю за всіма", "wine"],
+        ["😂 Головний жартівник", "beer"],
+        ["🗣️ Розповідаю історії", "strong"],
+        ["🕺 Через годину я вже танцюю", "mix"]
+    ]
+},
+
+{
+    question: "Наскільки ти готовий до спонтанних рішень?",
+    answers: [
+        ["0% — тільки за планом", "wine"],
+        ["30% — подивимось", "beer"],
+        ["70% — чому б і ні", "mix"],
+        ["100% — план вже не потрібен", "strong"]
+    ]
+},
+
+{
+    question: "Яка в тебе сьогодні енергія?",
+    answers: [
+        ["🔋 20%", "wine"],
+        ["🔋 50%", "beer"],
+        ["🔋 80%", "mix"],
+        ["⚡ 1000%", "strong"]
+    ]
+},
+
+{
+    question: "О котрій, на твою думку, закінчиться вечір?",
+    answers: [
+        ["🕙 Рано", "wine"],
+        ["🌙 Ближче до ночі", "beer"],
+        ["🌅 Дуже пізно", "mix"],
+        ["❓ Це вже не від мене залежить", "strong"]
+    ]
+},
+
+{
+    question: "Останнє питання. Ти готовий дізнатися правду?",
+    answers: [
+        ["🟢 Так, показуй", "beer"],
+        ["🟡 Мені вже цікаво", "wine"],
+        ["🔴 Ні, я передумав", "strong"],
+        ["💀 Я відчуваю підставу", "mix"]
+    ]
+}
+
+];
+
+
+let currentQuestion = 0;
+
+let scores = {
+    beer: 0,
+    wine: 0,
+    strong: 0,
+    mix: 0
+};
+
+
+function startTest() {
+
+    document.getElementById("startScreen")
+        .classList.add("hidden");
+
+    document.getElementById("quizScreen")
+        .classList.remove("hidden");
+
+    showQuestion();
+}
+
+
+function showQuestion() {
+
+    const q = questions[currentQuestion];
+
+    document.getElementById("questionNumber")
+        .textContent =
+        String(currentQuestion + 1).padStart(2, "0")
+        + " / 10";
+
+    document.getElementById("progressBar")
+        .style.width =
+        ((currentQuestion) / questions.length * 100) + "%";
+
+    const question =
+        document.getElementById("questionText");
+
+    question.style.animation = "none";
+    void question.offsetWidth;
+    question.style.animation = "cardIn .4s ease";
+
+    question.textContent = q.question;
+
+    const answers =
+        document.getElementById("answers");
+
+    answers.innerHTML = "";
+
+    q.answers.forEach((answer, index) => {
+
+        const button =
+            document.createElement("button");
+
+        button.className = "answer";
+
+        button.textContent = answer[0];
+
+        button.style.animation =
+            `cardIn .35s ease ${index * 0.05}s both`;
+
+        button.onclick = () => {
+            selectAnswer(answer[1]);
+        };
+
+        answers.appendChild(button);
+    });
+}
+
+
+function selectAnswer(type) {
+
+    scores[type]++;
+
+    currentQuestion++;
+
+    if (currentQuestion >= questions.length) {
+
+        showAnalysis();
+
+    } else {
+
+        showQuestion();
+
+    }
+}
+
+
+function showAnalysis() {
+
+    document.getElementById("quizScreen")
+        .classList.add("hidden");
+
+    document.getElementById("analysisScreen")
+        .classList.remove("hidden");
+
+    const status =
+        document.getElementById("analysisStatus");
+
+    const fill =
+        document.getElementById("analysisFill");
+
+    const steps = [
+        "Зчитування відповідей...",
+        "Аналіз настрою...",
+        "Визначення вечірнього профілю...",
+        "Порівняння відповідей...",
+        "Пошук закономірностей...",
+        "Формування прогнозу...",
+        "Результат майже готовий..."
+    ];
+
+    let step = 0;
+
+    const interval = setInterval(() => {
+
+        status.textContent = steps[step];
+
+        fill.style.width =
+            ((step + 1) / steps.length * 100) + "%";
+
+        step++;
+
+        if (step >= steps.length) {
+
+            clearInterval(interval);
+
+            setTimeout(showResult, 700);
+        }
+
+    }, 650);
+}
+
+
+function showResult() {
+
+    document.getElementById("analysisScreen")
+        .classList.add("hidden");
+
+    document.getElementById("resultScreen")
+        .classList.remove("hidden");
+
+    let result =
+        Object.keys(scores).reduce((a, b) =>
+            scores[a] > scores[b] ? a : b
+        );
+
+    const results = {
+
+        beer: {
+            icon: "🍺",
+            title: "СЬОГОДНІ ТИ — ПИВО",
+            description:
+                "Твій профіль показує максимально компанійський вайб. Алгоритм не може пояснити цей результат, але чомусь дуже впевнений.",
+            percent: 87,
+            energy: "HIGH",
+            chaos: "94%"
+        },
+
+        wine: {
+            icon: "🍷",
+            title: "СЬОГОДНІ ТИ — ВИНО",
+            description:
+                "Система виявила підозріло спокійний профіль. Схоже, сьогоднішній вечір має потенціал пройти значно цивілізованіше, ніж очікувалося.",
+            percent: 91,
+            energy: "MED",
+            chaos: "42%"
+        },
+
+        strong: {
+            icon: "🥃",
+            title: "СЬОГОДНІ ТИ — МІЦНЕ",
+            description:
+                "Твої відповіді настільки впевнені, що алгоритм навіть трохи занепокоївся. Подальші висновки науковці залишили без коментарів.",
+            percent: 94,
+            energy: "MAX",
+            chaos: "98%"
+        },
+
+        mix: {
+            icon: "🍹",
+            title: "СЬОГОДНІ ТИ — МІКС",
+            description:
+                "Твій профіль відмовився вибирати щось одне. Система прийняла це як знак і визначила тебе людиною вечірнього хаосу.",
+            percent: 89,
+            energy: "HIGH",
+            chaos: "99%"
+        }
+
+    };
+
+    const data = results[result];
+
+    document.getElementById("resultIcon")
+        .textContent = data.icon;
+
+    document.getElementById("resultTitle")
+        .textContent = data.title;
+
+    document.getElementById("resultDescription")
+        .textContent = data.description;
+
+    document.getElementById("percentageText")
+        .textContent = data.percent + "%";
+
+    document.getElementById("stat1")
+        .textContent = data.percent + "%";
+
+    document.getElementById("stat2")
+        .textContent = data.energy;
+
+    document.getElementById("stat3")
+        .textContent = data.chaos;
+
+    setTimeout(() => {
+
+        document.getElementById("resultFill")
+            .style.width = data.percent + "%";
+
+    }, 150);
+}
+
+
+function restartTest() {
+
+    currentQuestion = 0;
+
+    scores = {
+        beer: 0,
+        wine: 0,
+        strong: 0,
+        mix: 0
+    };
+
+    document.getElementById("resultScreen")
+        .classList.add("hidden");
+
+    document.getElementById("startScreen")
+        .classList.remove("hidden");
+
+    document.getElementById("resultFill")
+        .style.width = "0%";
+
+    document.getElementById("analysisFill")
+        .style.width = "0%";
+}
+
+</script>
+
+</body>
+</html>
